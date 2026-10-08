@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Breathe</title>
+<style>
+:root{--bg1:#0b1020;--bg2:#1a1f45;--tx:#eaf0ff;--mut:#9aa6d6;--glass:rgba(255,255,255,.07);--bd:rgba(255,255,255,.14);--a:#7fd6ff;--b:#b69cff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;font-family:'Quicksand','Segoe UI',system-ui,sans-serif;color:var(--tx);background:radial-gradient(120% 80% at 50% 0%,var(--bg2),var(--bg1));background-color:#0b1020;display:flex;justify-content:center}
+.app{width:100%;max-width:440px;padding:22px 20px 40px;text-align:center}
+h1{font-weight:300;letter-spacing:.35em;font-size:20px;margin:6px 0 2px;text-transform:uppercase}
+.sub{color:var(--mut);font-size:13px;margin-bottom:18px}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0}
+.chip,.btn{font:inherit;color:var(--tx);background:var(--glass);border:1px solid var(--bd);border-radius:999px;padding:9px 15px;font-size:13px;backdrop-filter:blur(8px);cursor:pointer;transition:all .35s}
+.chip.on{background:linear-gradient(135deg,rgba(127,214,255,.35),rgba(182,156,255,.35));border-color:rgba(255,255,255,.45);box-shadow:0 0 18px rgba(127,214,255,.25)}
+.chip:active,.btn:active{transform:scale(.95)}
+.hint{font-size:12px;color:var(--mut);min-height:16px;margin:4px 0 0}
+.stage{position:relative;height:300px;margin:14px auto;display:flex;align-items:center;justify-content:center}
+.ring{position:absolute;border-radius:50%;border:1px solid rgba(160,190,255,.25);animation:float 9s ease-in-out infinite}
+.r1{width:290px;height:290px}.r2{width:250px;height:250px;animation-delay:-3s}
+@keyframes float{50%{transform:scale(1.05);opacity:.5}}
+.orb{width:170px;height:170px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff9,var(--a) 35%,var(--b) 80%);box-shadow:0 0 60px 10px rgba(127,214,255,.35),0 0 120px 30px rgba(182,156,255,.25);transform:scale(.62);transition:transform 4s ease-in-out,box-shadow 4s;display:flex;align-items:center;justify-content:center}
+.orb.idle{animation:idle 6s ease-in-out infinite}
+@keyframes idle{50%{transform:scale(.7)}}
+.lbl{position:absolute;font-size:24px;font-weight:300;letter-spacing:.12em;text-shadow:0 2px 14px #0008;pointer-events:none}
+.lbl small{display:block;font-size:14px;color:#dfe8ff;opacity:.85;margin-top:4px;letter-spacing:.05em}
+.big{font-size:30px;font-weight:300;margin:2px 0 14px;letter-spacing:.08em;font-variant-numeric:tabular-nums}
+.start{font-size:17px;padding:15px 54px;letter-spacing:.2em;background:linear-gradient(135deg,rgba(127,214,255,.45),rgba(182,156,255,.45));box-shadow:0 8px 30px rgba(127,214,255,.2)}
+.row{display:flex;gap:10px;justify-content:center;margin-top:14px}
+.card{margin-top:30px;text-align:left;background:var(--glass);border:1px solid var(--bd);border-radius:22px;padding:18px;backdrop-filter:blur(10px)}
+.card h2{margin:0 0 4px;font-size:15px;font-weight:500;letter-spacing:.08em}
+.card p{margin:0 0 12px;font-size:12px;color:var(--mut);line-height:1.5}
+.add{display:flex;gap:8px}
+input[type=time]{flex:1;font:inherit;color:var(--tx);background:rgba(0,0,0,.25);border:1px solid var(--bd);border-radius:14px;padding:9px 12px;color-scheme:dark}
+.rem{display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:1px solid rgba(255,255,255,.07);font-size:15px}
+.rem button{background:none;border:0;color:var(--mut);font-size:18px;cursor:pointer}
+.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translate(-50%,-140%);background:rgba(30,36,80,.95);border:1px solid var(--bd);padding:12px 20px;border-radius:18px;transition:transform .6s;z-index:9;font-size:14px}
+.toast.show{transform:translate(-50%,0)}
+.note{font-size:11px;color:var(--mut);margin-top:10px;line-height:1.5}
+</style></head>
+<body><div class="app">
+<h1>Breathe</h1><div class="sub">slow down · one breath at a time</div>
+
+<div class="chips" id="pats"></div>
+<div class="hint" id="hint"></div>
+
+<div class="stage"><div class="ring r1"></div><div class="ring r2"></div>
+<div class="orb idle" id="orb"></div>
+<div class="lbl" id="lbl">Ready<small id="cnt"></small></div></div>
+
+<div class="big" id="time">05:00</div>
+<div class="chips" id="durs"></div>
+<div class="row"><button class="btn start" id="go">START</button></div>
+<div class="row"><button class="btn" id="snd">♪ Sound on</button></div>
+
+<div class="card">
+<h2>🔔 Daily reminders</h2>
+<p>Pick times when you'd like a gentle nudge to take a few deep breaths.</p>
+<div class="add"><input type="time" id="t" value="09:00"><button class="btn" id="addb">Add</button></div>
+<div id="rems"></div>
+<div class="note">Reminders ring while the app is open. In the installed Android app they fire in the background too.</div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const PATS=[
+ {n:'Calm 4-7-8',s:[['Inhale',4,1],['Hold',7,1],['Exhale',8,.62]],h:'Inhale 4s · hold 7s · exhale 8s — Dr. Andrew Weil’s technique; eases anxiety & helps sleep.'},
+ {n:'Box 4-4-4-4',s:[['Inhale',4,1],['Hold',4,1],['Exhale',4,.62],['Hold',4,.62]],h:'Equal 4s phases — used by athletes & the military to stay focused under stress.'},
+ {n:'Coherent 5.5',s:[['Inhale',5.5,1],['Exhale',5.5,.62]],h:'About 6 breaths/min — studies link it to higher heart-rate variability & calm.'}
+];
+const DURS=[1,3,5,10];
+let pi=0,dur=5,run=false,timers=[],left=0,tick,step=0,rems=[];
+try{rems=JSON.parse(localStorage.getItem('rems')||'[]')}catch(e){}
+function mk(box,arr,fn,cur){box.innerHTML='';arr.forEach((x,i)=>{const b=document.createElement('button');b.className='chip'+(cur()===i?' on':'');b.textContent=fn(x);b.onclick=()=>{click();set(i)};box.appendChild(b)})}
+function draw(){
+ mk($('pats'),PATS,p=>p.n,()=>pi);$('pats').querySelectorAll('.chip').forEach((b,i)=>b.onclick=()=>{if(run)return;click();pi=i;draw()});
+ mk($('durs'),DURS,d=>d+' min',()=>DURS.indexOf(dur));$('durs').querySelectorAll('.chip').forEach((b,i)=>b.onclick=()=>{if(run)return;click();dur=DURS[i];draw()});
+ $('hint').textContent=PATS[pi].h;if(!run)$('time').textContent=fmt(dur*60);
+}
+function set(){}
+const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0');
+
+/* ---------- audio ---------- */
+let ac,master,lp,sndOn=true,oscs=[];
+function initAudio(){
+ if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();
+ master=ac.createGain();master.gain.value=0;lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=500;lp.Q.value=.6;
+ lp.connect(master);master.connect(ac.destination);
+ [110,164.81,220,277.18,329.63,493.88].forEach((f,i)=>{[-4,4].forEach(d=>{
+  const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f;o.detune.value=d;g.gain.value=i>3?.025:.06;
+  const l=ac.createOscillator(),lg=ac.createGain();l.frequency.value=.05+Math.random()*.1;lg.gain.value=g.gain.value*.5;l.connect(lg);lg.connect(g.gain);l.start();
+  o.connect(g);g.connect(lp);o.start();})});
+}
+function pad(on){if(!ac)return;const t=ac.currentTime;master.gain.cancelScheduledValues(t);master.gain.setTargetAtTime(on&&sndOn?.5:0,t,1.5)}
+function swell(up,secs){if(!ac)return;const t=ac.currentTime;lp.frequency.cancelScheduledValues(t);lp.frequency.setTargetAtTime(up?1100:450,t,secs/3)}
+function bell(f=660,v=.12,len=2.2){if(!ac||!sndOn)return;const t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+len);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+len)}
+function click(){initAudio();if(ac.state==='suspended')ac.resume();bell(880,.05,.5)}
+$('snd').onclick=()=>{initAudio();sndOn=!sndOn;$('snd').textContent=sndOn?'♪ Sound on':'♪ Sound off';pad(run);if(sndOn)bell(880,.05,.5)};
+
+/* ---------- session ---------- */
+function runStep(){
+ if(!run)return;const P=PATS[pi].s,[nm,sec,sc]=P[step%P.length];
+ const o=$('orb');o.style.transitionDuration=sec+'s';o.style.transform='scale('+sc+')';
+ o.style.boxShadow=sc>.9?'0 0 90px 24px rgba(127,214,255,.5),0 0 150px 50px rgba(182,156,255,.35)':'0 0 50px 8px rgba(127,214,255,.28),0 0 100px 24px rgba(182,156,255,.2)';
+ $('lbl').firstChild.nodeValue=nm;let c=Math.ceil(sec);$('cnt').textContent=c;
+ if(nm==='Inhale')swell(true,sec);if(nm==='Exhale')swell(false,sec);
+ if(nm!=='Hold')bell(nm==='Inhale'?523:392,.05,1.4);
+ const iv=setInterval(()=>{c--;if(c>0)$('cnt').textContent=c},1000);
+ timers.push(iv,setTimeout(()=>{clearInterval(iv);step++;runStep()},sec*1000));
+}
+function start(){
+ click();run=true;step=0;left=dur*60;$('go').textContent='STOP';$('orb').classList.remove('idle');pad(true);
+ $('orb').style.transitionDuration='0s';$('orb').style.transform='scale(.62)';
+ setTimeout(runStep,50);
+ tick=setInterval(()=>{left--;$('time').textContent=fmt(left);if(left<=0)stop(true)},1000);$('time').textContent=fmt(left);
+}
+function stop(done){
+ run=false;timers.forEach(t=>{clearTimeout(t);clearInterval(t)});timers=[];clearInterval(tick);
+ $('go').textContent='START';const o=$('orb');o.style.transitionDuration='4s';o.style.transform='scale(.62)';
+ setTimeout(()=>{if(!run)o.classList.add('idle')},4100);
+ $('lbl').firstChild.nodeValue=done?'Well done':'Ready';$('cnt').textContent=done?'notice how you feel':'';pad(false);if(done){bell(528,.12,3.5);}draw();
+}
+$('go').onclick=()=>run?stop(false):start();
+
+/* ---------- reminders ---------- */
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),6000)}
+function save(){try{localStorage.setItem('rems',JSON.stringify(rems))}catch(e){}drawRems()}
+function drawRems(){const b=$('rems');b.innerHTML='';rems.slice().sort().forEach(r=>{const d=document.createElement('div');d.className='rem';d.innerHTML='<span>'+r+'</span>';const x=document.createElement('button');x.textContent='✕';x.onclick=()=>{rems=rems.filter(v=>v!==r);save()};d.appendChild(x);b.appendChild(d)})}
+$('addb').onclick=()=>{click();const v=$('t').value;if(v&&!rems.includes(v)){rems.push(v);save();try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission()}catch(e){}}};
+let lastFire='';
+setInterval(()=>{const n=new Date(),k=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+ if(rems.includes(k)&&lastFire!==k){lastFire=k;bell(660,.15,3);bell(990,.08,3.5);toast('🌿 Time to pause — take a deep breath');
+  try{if('Notification' in window&&Notification.permission==='granted')new Notification('Breathe',{body:'Take a few deep breaths 🌿'})}catch(e){}}},15000);
+draw();drawRems();
+</script></body></html>
